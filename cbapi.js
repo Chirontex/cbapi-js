@@ -1,5 +1,5 @@
 /**
- * CBAPI.js 0.0.1
+ * CBAPI.js 0.2.0
  * Copyright (c) 2021 Dmitry Shumilin
  * 
  * MIT License
@@ -22,7 +22,6 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-import * as Blueimp_MD5 from './node_modules/blueimp-md5/js/md5.min'
 'use strict'
 
 class CBAPI
@@ -36,6 +35,8 @@ class CBAPI
         this.url = String(url)
         this.login = String(login)
         this.key = String(key)
+
+        if (this.url[this.url.length - 1] != '/') this.url = this.url+'/'
 
         let http = ''
 
@@ -69,10 +70,7 @@ class CBAPI
 
         const request = await fetch(url, {
             method: 'POST',
-            headers: {
-                'Content-type': 'application/json',
-                'Content-length': command.length
-            },
+            mode: 'cors',
             body: command
         })
 
@@ -90,29 +88,37 @@ class CBAPI
             }
         )
 
-        return request.then(async (answer) => {
-            if (answer['code'] == 0)
-            {
-                const auth = await this.command(
-                    this.url+'api/auth/auth',
-                    {
-                        v: '1.0',
-                        login: this.login,
-                        hash: Blueimp_MD5.md5(answer['salt']+this.key)
-                    }
-                )
+        let response = await request
 
-                return await auth.json()
-            }
+        if (response['code'] == 0)
+        {
+            const auth = await this.command(
+                this.url+'api/auth/auth',
+                {
+                    v: '1.0',
+                    login: this.login,
+                    hash: md5(response['salt']+this.key)
+                }
+            )
+
+            response = await auth
+
+            if (response['code'] == 0) return response['access_id']
             else
             {
-                console.log('Authorization salt request failure.')
-                console.log(
-                    'Client Base server answer: '+answer['code']+', "'+answer['code']+'"'
-                )
-
-                return answer
+                this.error(response['code'], response['message'])
+                return ''
             }
-        })
+        }
+        else
+        {
+            this.error(response['code'], response['message'])
+            return ''
+        }
+    }
+
+    error(code, text)
+    {
+        console.log('Client Base server answer: '+code+', "'+text+'"')
     }
 }
