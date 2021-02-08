@@ -1,5 +1,5 @@
 /**
- * CBAPI.js 0.2.0
+ * CBAPI.js 0.9.9
  * Copyright (c) 2021 Dmitry Shumilin
  * 
  * MIT License
@@ -219,6 +219,16 @@ class CBAPI
 
     async tablePerms(id) {return await this.tableDetails('perms', id)}
     async tableInfo(id) {return await this.tableDetails('info', id)}
+
+    async files(command)
+    {
+        command['access_id'] = await this.auth()
+
+        return await this.command(
+            this.url+'api/data/files',
+            command
+        )
+    }
 
     error(params)
     {
