@@ -106,19 +106,124 @@ class CBAPI
             if (response['code'] == 0) return response['access_id']
             else
             {
-                this.error(response['code'], response['message'])
+                response['text'] = 'Authentication failure.'
+
+                this.error(response)
                 return ''
             }
         }
         else
         {
-            this.error(response['code'], response['message'])
+            response['text'] = 'Authentication salt request failure.'
+
+            this.error(response)
             return ''
         }
     }
 
-    error(code, text)
+    async dataCrud(action, command)
     {
-        console.log('Client Base server answer: '+code+', "'+text+'"')
+        if (action == 'create' ||
+            action == 'read' ||
+            action == 'update' ||
+            action == 'delete')
+        {
+            command['access_id'] = await this.auth()
+
+            const request = await this.command(
+                this.url+'api/data/'+action,
+                command
+            )
+
+            return await request
+        }
+        else
+        {
+            const error = {
+                text: 'CBAPI error',
+                code: -7,
+                message: 'Invalid action.'
+            }
+
+            error(error)
+
+            return error
+        }
+    }
+
+    async dataCreate(command) {return await this.dataCrud('create', command)}
+    async dataRead(command) {return await this.dataCrud('read', command)}
+    async dataUpdate(command) {return await this.dataCrud('update', command)}
+    async dataDelete(command) {return await this.dataCrud('delete', command)}
+
+    async getList(entity)
+    {
+        if (entity == 'group' ||
+            entity == 'table' ||
+            entity == 'user')
+        {
+            return await this.command(
+                this.url+'api/'+entity+'/get_list',
+                {access_id: await this.auth()}
+            )
+        }
+        else
+        {
+            const error = {
+                text: 'CBAPI error',
+                code: -8,
+                message: 'This entity cannot be listed.'
+            }
+
+            this.error(error)
+
+            return error
+        }
+    }
+
+    async groupList() {return await this.getList('group')}
+    async tableList() {return await this.getList('table')}
+    async userList() {return await this.getList('user')}
+
+    async tableDetails(detail, id)
+    {
+        let request_uri = '/api/table/'
+
+        if (detail == 'perms' ||
+            detail == 'info')
+        {
+            request_uri = request_uri +
+            (detail == 'perms' ? 'get_'+detail : detail)
+
+            return await this.command(
+                this.url+request_uri,
+                {
+                    access_id: await this.auth(),
+                    id: id
+                }
+            )
+        }
+        else
+        {
+            const error = {
+                text: 'CBAPI error',
+                code: -9,
+                message: 'Invalid table details requested.'
+            }
+
+            this.error(error)
+
+            return error
+        }
+    }
+
+    async tablePerms(id) {return await this.tableDetails('perms', id)}
+    async tableInfo(id) {return await this.tableDetails('info', id)}
+
+    error(params)
+    {
+        console.error(params['text']+`
+        Client Base server answer: `+params['code']+
+        `, "`+params['message']+`"`)
     }
 }
