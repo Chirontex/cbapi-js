@@ -1,4 +1,13 @@
 {
+  "name": "cbapi.js",
+  "version": "1.0.0",
+  "description": "Этот пакет позволяет работать c API \"Клиентской базы\".",
+  "license": "MIT",
+  "author": {
+    "name": "Дмитрий Шумилин",
+    "email": "dr.noisier@yandex.ru",
+    "url": "https://github.com/infernusophiuchus"
+  },
   "dependencies": {
     "blueimp-md5": "^2.18.0"
   }

@@ -1,5 +1,5 @@
 /**
- * CBAPI.js 0.9.9
+ * cbapi.js 1.0.0
  * Copyright (c) 2021 Dmitry Shumilin
  * 
  * MIT License
