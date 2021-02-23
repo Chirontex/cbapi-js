@@ -63,4 +63,4 @@ P.S.:
 
 command — объект с параметрами запроса (см. https://clientbase.ru/help/for_admin_16/api/)
 
-id — ID сущности в системе, тип **int**
+id — ID сущности в системе
